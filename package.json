@@ -1,0 +1,27 @@
+{
+  "name": "cocotte-helper",
+  "description": "初期化引数ヘルパー",
+  "homepage": "https://github.com/yukik/cocotte-helper",
+  "keywords": [
+    "cocotte",
+    "tools"
+  ],
+  "author": "Yuki Kurata <yuki.kurata@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/yukik/cocotte-helper.git"
+  },
+  "main": "lib/helper.js",
+  "version": "0.2.0",
+  "scripts": {
+    "test": "node ./test/test.js"
+  },
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yukik/cocotte-helper/issues"
+  }
+}
