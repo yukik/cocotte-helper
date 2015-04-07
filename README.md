@@ -330,3 +330,69 @@ instance.obj.info();
 
 Klass1の初期化引数のobjの設定は、Klass2の初期化引数になっています  
 この場合は、Klass1のテストや初期化を行う際にKlass2のテストや初期化も連動して行われます  
+
+
+## 連鎖時、継承クラスに対応する
+
+初期化引数の連鎖オブジェクトにextendTypeを設定すると、継承クラスを設定することができます
+
+```
+var helper = require('cocotte-helper');
+
+// クラス1
+function Klass1 (config) {
+  helper.copy(config, this);
+}
+Klass1.properties = {
+  obj: {
+    type: Klass2,
+    required: true
+  }
+};
+
+// クラス2
+function Klass2 () {}
+Klass2.prototype.info = function () {
+  console.log('name:' + this.name);
+  console.log('type:' + this.constructor.name);
+};
+Klass2.properties = {};
+
+// クラス3
+function Klass3 (config) {
+  helper.copy(config, this);
+}
+//  - 継承を設定
+Klass3.prototype = Object.create(Klass2.prototype, {
+  constructor: {value: Klass3, enumerable: false, writable: true, configurable: true}
+});
+Klass3.properties = {
+  name: {
+    type: String,
+    required: true
+  }
+};
+
+// 初期化引数
+var config = {
+  obj: {
+    name: 'bar',
+    extendType: Klass3
+  }
+};
+
+// 継承クラスのテスト
+helper.of(Klass1).test(config);
+
+// 継承クラスを使用した初期化
+var instance = new Klass1(config);
+instance.obj.info();
+```
+
+objはKlass2型を設定する必要がありますが、実際にはKlass3型です  
+ただし、Klass3はKlass2を継承しているため問題はありません  
+継承が正しくない場合は、テストは合格せず、初期化は失敗します
+
+
+
+

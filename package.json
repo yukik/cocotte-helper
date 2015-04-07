@@ -6,13 +6,16 @@
     "cocotte",
     "tools"
   ],
+  "dependencies": {
+    "cocotte-matrix": "*"
+  },
   "author": "Yuki Kurata <yuki.kurata@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git://github.com/yukik/cocotte-helper.git"
   },
   "main": "lib/helper.js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "scripts": {
     "test": "node ./test/test.js"
   },
