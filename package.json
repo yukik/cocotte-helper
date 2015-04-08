@@ -15,7 +15,7 @@
     "url": "git://github.com/yukik/cocotte-helper.git"
   },
   "main": "lib/helper.js",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "test": "node ./test/test.js"
   },

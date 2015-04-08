@@ -1,3 +1,8 @@
+/**
+ * テンプレートの表示
+ */
+
+
 function Klass (config) {
 }
 Klass.properties = {}; // 省略

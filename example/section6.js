@@ -1,3 +1,8 @@
+/**
+ * 継承クラスの連鎖
+ */
+
+
 var helper = require('cocotte-helper');
 
 // クラス1

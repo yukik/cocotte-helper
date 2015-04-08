@@ -1,3 +1,8 @@
+/*
+ * クラスヘルパーの作成とテスト
+ */
+
+
 var helper = require('cocotte-helper');
 
 // テンプレート

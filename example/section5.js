@@ -1,3 +1,8 @@
+/**
+ * テスト・初期化の連鎖
+ */
+
+
 var helper = require('cocotte-helper');
 
 // クラス1

@@ -1,3 +1,8 @@
+/*
+ * プロパティのテストと設定の自動化
+ */
+
+
 var helper = require('cocotte-helper');
 
 function Foo (config) {

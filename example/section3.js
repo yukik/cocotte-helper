@@ -1,3 +1,8 @@
+/**
+ * プロパティ情報の表示
+ */
+
+
 function Klass (config) {
 }
 Klass.properties = {
@@ -24,3 +29,4 @@ Klass.properties = {
 
 var helper = require('cocotte-helper').of(Klass);
 helper.property();
+helper.property('name');

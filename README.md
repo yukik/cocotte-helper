@@ -199,7 +199,6 @@ helper.property();
     + typeは単体で指定されることを示します
     + arrayTypeは設定値を配列で指定する必要があることを示します
         + 配列の要素はそれぞれ指定したクラスである必要があります
-        + 先のコードのphonesの
     + この設定は排他で必ずどちらか設定する必要があります
   + description
     + 設定の目的を説明します
@@ -268,7 +267,7 @@ var helper = require('cocotte-helper');
 helper.of(Klass).template();
 ```
 
-# テスト・設定の連鎖
+# テスト・初期化の連鎖
 
 has-aの関係にあるオブジェクトのテストや自動コピーが連鎖させることができます  
 具体的には次のコードを確認してください
@@ -393,6 +392,51 @@ objはKlass2型を設定する必要がありますが、実際にはKlass3型�
 ただし、Klass3はKlass2を継承しているため問題はありません  
 継承が正しくない場合は、テストは合格せず、初期化は失敗します
 
+# サブプロパティ
 
+クラスだけではなくサブプロパティの定義を行うことができます  
+テスト・初期化の連鎖と異なり、別クラスに定義されているわけではなく、
+同じクラスで定義できる特徴があります
 
+```
+var helper = require('cocotte-helper');
 
+// クラス
+function Klass (config) {
+  helper.copy(config, this);
+}
+Klass.properties = {
+  obj: {
+    type: Object,
+    properties: {
+      name: {
+        type: String,
+      }
+    }
+  }
+};
+
+// 初期化引数
+var config = {
+  obj: {name: 'foo'}
+};
+
+var klassHelper = helper.of(Klass);
+
+// テスト
+klassHelper.test(config);
+
+// 初期化
+var instance = new Klass(config);
+console.log(instance.obj.name);
+
+// 定義の取得
+klassHelper.property();
+klassHelper.property('obj.name');
+```
+
+サブプロパティのtypeは必ずObjectにします  
+さらに、propertiesを定義します  
+サブプロパティにさらにサブプロパティを定義することもできます  
+これにより、深い階層をもつ設定を定義することができます  
+サブプロパティの詳細情報は.で名称を連結することで取得できます  
