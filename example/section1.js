@@ -5,11 +5,13 @@
 
 var helper = require('cocotte-helper');
 
-function Foo (config) {
+// クラス
+function Klass (config) {
   helper.copy(config, this);
 }
 
-Foo.properties = {
+// プロパティ情報
+Klass.properties = {
   name: {
     type: String,
     required: true
@@ -19,6 +21,5 @@ Foo.properties = {
   }
 };
 
-var foo = new Foo({name: 'foo', age: 10});
-
-console.log(foo);
+var instance = new Klass({name: 'foo', age: 10});
+console.log(instance);

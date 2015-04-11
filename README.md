@@ -10,17 +10,19 @@ cocotte-helper
 
 # ヘルパー
 
-ヘルパーの基本的な使用法はコンストラクタで、copyコマンドを使用し
+ヘルパーの基本的な使用法はコンストラクタでcopyコマンドを使用し、
 プロパティのテストと設定を自動的に行うことです。
 
 ```
 var helper = require('cocotte-helper');
 
-function Foo (config) {
+// クラス
+function Klass (config) {
   helper.copy(config, this);
 }
 
-Foo.properties = {
+// プロパティ情報
+Klass.properties = {
   name: {
     type: String,
     required: true
@@ -30,10 +32,11 @@ Foo.properties = {
   }
 };
 
-var foo = new Foo({name: 'foo', age: 10});
-
-console.log(foo);
+var instance = new Klass({name: 'foo', age: 10});
+console.log(instance);
 ```
+
+初期化引数がプロパティ情報に違反する値が設定されていた場合は例外が発生します  
 
 ## ヘルパーのコマンド
 
@@ -48,7 +51,8 @@ propertiesを省略した場合はinstanceのクラスに定義されたプロ�
 自動的に設定します
 
 テストに違反した場合は、例外を投げます  
-初期化引数で省略されたものは、typeではnull、arrayTypeでは空配列が設定されます
+このメソッドの戻り値は、初期化引数で省略されたプロパティ名を配列で返します  
+また、初期化引数で省略されたものは、typeではnull、arrayTypeでは空配列が設定されます 
 
 ## var classHelper = helper.of(Klass)
 
@@ -63,6 +67,11 @@ propertiesを省略した場合はinstanceのクラスに定義されたプロ�
 カスタムヘルパーを作成します  
 プロパティ情報の設定されていないクラスでも、プロパティ情報・テンプレートを個別に
 指定することで、クラスヘルパーを作成することができます
+
+## helper.inherits(Klass2, Klass1)
+
+Klass2の継承元をKlass1に設定します  
+詳しくは継承クラスの項で説明します
 
 # クラスヘルパー
 
@@ -165,8 +174,7 @@ actionに次の文字列を指定することで次のように挙動を変更�
 個別の設定名については後述します
 
 ```
-function Klass (config) {
-}
+function Klass () {}
 Klass.properties = {
   name: {
     type: String,
@@ -191,17 +199,22 @@ Klass.properties = {
 
 var helper = require('cocotte-helper').of(Klass);
 helper.property();
+helper.property('name');
 ```
 
 ### 設定名
-  + type, arrayType
+  + type, arrayType,keyType
     + 設定値のクラスを指定します
     + typeは単体で指定されることを示します
     + arrayTypeは設定値を配列で指定する必要があることを示します
         + 配列の要素はそれぞれ指定したクラスである必要があります
-    + この設定は排他で必ずどちらか設定する必要があります
+    + keyTypeは設定値がキーと値の組み合わせで設定する必要があることを示します
+        + 値はそれぞれ指定したクラスである必要があります
+    + これらの設定は排他で必ずひとつ設定する必要があります
   + description
     + 設定の目的を説明します
+    + 文字列もしくは文字列の配列を指定します
+    + 配列を指定した場合は、それぞれの要素の間に改行をふくむようになります
     + 省略可能です
   + required
     + この設定は必ず行う必要があるかを真偽値で示します
@@ -214,6 +227,39 @@ helper.property();
     + 戻り値は設定されません
     + 違反時は例外を発生させます
     + 値が未設定(undefined/null)の場合は、このテストは行われません
+
+type,arrayType,keyTypeの違いを次のコードで確認してください
+
+```
+var helper = require('cocotte-helper');
+
+function Klass (config) {
+  helper.copy(config, this);
+}
+Klass.properties = {
+  p_single : {
+    type: String
+  },
+  p_array: {
+    arrayType: String
+  },
+  p_key: {
+    keyType: String
+  }
+};
+
+var config = {
+  p_single: 'foo',
+  p_array: ['foo', 'bar'],
+  p_key: {
+    name1: 'foo',
+    name2: 'bar'
+  }
+};
+
+var inst = new Klass(config);
+console.log(inst);
+```
 
 ### String固有の設定名
 
@@ -252,10 +298,12 @@ helper.property();
 templateコマンドで表示するテンプレートを設定します
 
 ```
-function Klass (config) {
-}
+var helper = require('cocotte-helper');
+
+function Klass () {}
 Klass.properties = {}; // 省略
 
+// テンプレート
 Klass.template = [
   'var config = {',
   '  name: "foo",',
@@ -263,140 +311,12 @@ Klass.template = [
   '}'
 ];
 
-var helper = require('cocotte-helper');
 helper.of(Klass).template();
 ```
 
-# テスト・初期化の連鎖
-
-has-aの関係にあるオブジェクトのテストや自動コピーが連鎖させることができます  
-具体的には次のコードを確認してください
-
-```
-var helper = require('cocotte-helper');
-
-// クラス1
-function Klass1 (config) {
-  helper.copy(config, this);
-}
-Klass1.prototype.info = function () {
-  console.log('name:' + this.name);
-  console.log('obj:' + this.obj.constructor.name);
-};
-Klass1.properties = {
-  name: {
-    type:String,
-    required: true
-  },
-  obj: {
-    type: Klass2,
-    required: false
-  }
-};
-
-// クラス2
-function Klass2 (config) {
-  helper.copy(config, this);
-}
-Klass2.prototype.info = function () {
-  console.log('name:' + this.name);
-};
-Klass2.properties = {
-  name: {
-    type: String,
-    required: true
-  }
-};
-
-// 初期化引数
-var config = {
-  name: 'foo',
-  obj: {
-    name: 'bar'
-  }
-};
-
-// テストの連鎖
-helper.of(Klass1).test(config);
-
-// 初期化の連鎖
-var instance = new Klass1(config);
-instance.info();
-instance.obj.info();
-
-
-```
-
-Klass1の初期化引数のobjの設定は、Klass2の初期化引数になっています  
-この場合は、Klass1のテストや初期化を行う際にKlass2のテストや初期化も連動して行われます  
-
-
-## 連鎖時、継承クラスに対応する
-
-初期化引数の連鎖オブジェクトにextendTypeを設定すると、継承クラスを設定することができます
-
-```
-var helper = require('cocotte-helper');
-
-// クラス1
-function Klass1 (config) {
-  helper.copy(config, this);
-}
-Klass1.properties = {
-  obj: {
-    type: Klass2,
-    required: true
-  }
-};
-
-// クラス2
-function Klass2 () {}
-Klass2.prototype.info = function () {
-  console.log('name:' + this.name);
-  console.log('type:' + this.constructor.name);
-};
-Klass2.properties = {};
-
-// クラス3
-function Klass3 (config) {
-  helper.copy(config, this);
-}
-//  - 継承を設定
-Klass3.prototype = Object.create(Klass2.prototype, {
-  constructor: {value: Klass3, enumerable: false, writable: true, configurable: true}
-});
-Klass3.properties = {
-  name: {
-    type: String,
-    required: true
-  }
-};
-
-// 初期化引数
-var config = {
-  obj: {
-    name: 'bar',
-    extendType: Klass3
-  }
-};
-
-// 継承クラスのテスト
-helper.of(Klass1).test(config);
-
-// 継承クラスを使用した初期化
-var instance = new Klass1(config);
-instance.obj.info();
-```
-
-objはKlass2型を設定する必要がありますが、実際にはKlass3型です  
-ただし、Klass3はKlass2を継承しているため問題はありません  
-継承が正しくない場合は、テストは合格せず、初期化は失敗します
-
 # サブプロパティ
 
-クラスだけではなくサブプロパティの定義を行うことができます  
-テスト・初期化の連鎖と異なり、別クラスに定義されているわけではなく、
-同じクラスで定義できる特徴があります
+サブプロパティの定義を行うことができます  
 
 ```
 var helper = require('cocotte-helper');
@@ -440,3 +360,188 @@ klassHelper.property('obj.name');
 サブプロパティにさらにサブプロパティを定義することもできます  
 これにより、深い階層をもつ設定を定義することができます  
 サブプロパティの詳細情報は.で名称を連結することで取得できます  
+
+# 継承クラス
+
+継承を実装するためにはhelper.inheritsを使用します  
+このメソッドは、継承元のプロパティ情報と継承先のプロパティ情報をマージしますので、
+必ず継承先のプロパティ情報を定義した後に実行してください
+
+```
+var helper = require('cocotte-helper');
+
+// クラス1
+function Klass1 (config) {
+  helper.copy(config, this);     // copyは継承元から呼び出された場合は重複処理されません
+  this.created = new Date();
+}
+Klass1.properties = {
+  name: {
+    type:String,
+    required: true
+  }
+};
+Klass1.prototype.info = function info() {
+  console.log('name:' + this.name);             // foo
+  console.log('created:' + this.created);       // undefined
+  console.log('type:' + this.constructor.name); // Klass2
+};
+
+// クラス2
+function Klass2 (config) {
+  helper.copy(config, this);
+  // Klass1.call(this, config);  // 継承元のクラスのコンストラクタの呼び出す場合
+}
+//  - プロパティ情報はinheritsの前に定義
+Klass2.properties = {
+  age: {
+    type: Number,
+    required: true
+  }
+};
+//  -  継承
+helper.inherits(Klass2, Klass1);
+
+// プロパティ情報の表示
+var hpr = helper.of(Klass2);
+hpr.property();
+hpr.property('name');
+
+// 初期化
+var instance = new Klass2({age: 10, name: 'foo'});
+instance.info();
+```
+
+最後の行で、インスタンスにnameプロパティも設定されていることが確認できます  
+
+
+# テスト・初期化の連鎖
+
+has-aの関係にあるオブジェクトのテストや自動コピーを連鎖させることができます  
+具体的には次のコードを確認してください
+
+```
+var helper = require('cocotte-helper');
+
+// クラス1
+function Klass1 (config) {
+  helper.copy(config, this);
+}
+Klass1.prototype.info = function () {
+  console.log('name:' + this.name);                // foo
+  console.log('obj:' + this.obj.constructor.name); // Klass2
+};
+Klass1.properties = {
+  name: {
+    type:String,
+    required: true
+  },
+  obj: {
+    type: Klass2,   // 自作クラスをtypeに設定できる
+    required: false
+  }
+};
+
+// クラス2
+function Klass2 (config) {
+  helper.copy(config, this);
+}
+Klass2.prototype.info = function () {
+  console.log('name:' + this.name);   // bar
+};
+Klass2.properties = {
+  name: {
+    type: String,
+    required: true
+  }
+};
+
+// 初期化引数
+var config = {
+  name: 'foo',
+  obj: {          // Klass2のconfigをそのまま設定しても良い
+    name: 'bar'
+  }
+};
+
+// テストの連鎖
+helper.of(Klass1).test(config);
+
+// 初期化の連鎖
+var instance = new Klass1(config);
+instance.info();
+instance.obj.info();
+```
+
+Klass1の初期化引数のobjの設定は、Klass2の初期化引数になっています  
+この場合は、Klass1のテストや初期化を行う際にKlass2のテストや初期化も連動して行われます  
+
+
+## 連鎖時、継承クラスに対応する
+
+初期化が連鎖するオブジェクトにtypeを設定すると、テスト・初期化に使用するクラスを
+継承クラスにします  
+
+```
+var helper = require('cocotte-helper');
+
+// クラス1
+function Klass1 (config) {
+  helper.copy(config, this);
+}
+Klass1.properties = {
+  obj: {
+    type: Klass2,
+    required: true
+  }
+};
+
+// クラス2
+function Klass2 (config) {
+  helper.copy(config, this);
+}
+Klass2.prototype.info = function () {
+  console.log('name:' + this.name);
+  console.log('type:' + this.constructor.name);  // Klass3
+};
+Klass2.properties = {
+  name: {
+    type : String,
+    required: true
+  }
+};
+
+// クラス3
+function Klass3 (config) {
+  helper.copy(config, this);
+}
+Klass3.properties = {
+  age: {
+    type: Number,
+    required: true
+  }
+};
+helper.inherits(Klass3, Klass2);
+
+// 初期化引数
+var config = {
+  obj: {
+    type: Klass3,   // 継承先のクラスを指定できる
+    name: 'bar',
+    age: 10
+  }
+};
+
+// 継承クラスのテスト
+helper.of(Klass1).test(config);
+
+// 継承クラスを使用した初期化
+var instance = new Klass1(config);
+instance.obj.info();
+```
+
+objはKlass2型を設定する必要がありますが、実際にはKlass3型です  
+ただし、Klass3はKlass2を継承しているため問題はありません  
+継承が正しくない場合は、テストは合格せず、初期化は失敗します
+
+

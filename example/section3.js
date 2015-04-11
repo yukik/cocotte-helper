@@ -3,8 +3,7 @@
  */
 
 
-function Klass (config) {
-}
+function Klass () {}
 Klass.properties = {
   name: {
     type: String,
