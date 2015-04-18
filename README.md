@@ -10,7 +10,7 @@ cocotte-helper
 
 # ヘルパー
 
-ヘルパーの基本的な使用法はコンストラクタでcopyコマンドを使用し、
+ヘルパーの基本的な使用法はコンストラクタでcopyメソッドを使用し、
 プロパティのテストと設定を自動的に行うことです。
 
 ```
@@ -38,58 +38,49 @@ console.log(instance);
 
 初期化引数がプロパティ情報に違反する値が設定されていた場合は例外が発生します  
 
-## ヘルパーのコマンド
+## ヘルパーのメソッド
 
-##helper.help()
-
-ヘルパーの使用方法を表示
-
-##helper.copy(config, instance, properties)
+## helper.copy(config, instance, properties)
 
 テストと同時にプロパティのコピーします  
-propertiesを省略した場合はinstanceのクラスに定義されたプロパティ情報から
-自動的に設定します
-
 テストに違反した場合は、例外を投げます  
-このメソッドの戻り値は、初期化引数で省略されたプロパティ名を配列で返します  
-また、初期化引数で省略されたものは、typeではnull、arrayTypeでは空配列が設定されます 
+このメソッドの戻り値は、コピー元のオブジェクトです  
+初期化引数で省略されたものは、typeではnull、arrayTypeでは空配列が設定されます 
 
-## var classHelper = helper.of(Klass)
-
-クラスヘルパーを作成します  
-対象のクラスにプロパティ情報が設定されていなければなりません  
-クラスヘルパーは、プロパティ情報やテンプレート表示したりすることができます  
-詳しくはクラスペルパーのコマンドを参照してください  
-
-
-## var classHelper = helper(properties, template)
-
-カスタムヘルパーを作成します  
-プロパティ情報の設定されていないクラスでも、プロパティ情報・テンプレートを個別に
-指定することで、クラスヘルパーを作成することができます
+propertiesを省略した場合はinstanceのクラスに定義されたプロパティ情報から自動的に設定します  
+通常はコンストラクタに`helper.copy(config, this);`と記述します  
+特定のプロパティのコピーを行わない場合はプロパティ情報のcopyにfalseを設定します
 
 ## helper.inherits(Klass2, Klass1)
 
 Klass2の継承元をKlass1に設定します  
+util.inheritsの機能に加え、プロパティ情報も継承させることができます  
 詳しくは継承クラスの項で説明します
 
-# クラスヘルパー
+## var klassHelper = helper.of(Klass)
+
+専用ヘルパーを作成します  
+対象のクラスにプロパティ情報が設定されていなければなりません  
+専用ヘルパーは、プロパティ情報やテンプレート表示したりすることができます  
+
+## var klassHelper = helper(klassName, properties, template)
+
+専用ヘルパーを作成します  
+プロパティ情報の設定されていないクラスでも、プロパティ情報・テンプレートを個別に
+指定することで、専用ヘルパーを作成することができます
+
+# 専用ヘルパー
 
 ```
 var helper = require('cocotte-helper');
 
-// テンプレート
-var template = [
-  'var config = {',
-  '  name: \'foo\',',
-  '  age: 30',
-  '};',
-  '',
-  'var instance = new Klass(config);'
-];
+// クラス
+function Klass(config) {
+  helper.copy(config, this);
+}
 
-// プロパティ
-var properties = {
+// プロパティ情報
+Klass.properties = {
   name: {
     type: String,
     description: '氏名',
@@ -101,36 +92,30 @@ var properties = {
     description: '年齢',
     min: 0,
     max: 120
+  },
+  entryDate: {
+    type: Date
   }
 };
 
-// クラス
-function Klass(config) {
-  helper.copy(config, this);
-}
-Klass.properties = properties;
-Klass.template = template;
-
-// クラスヘルパーを作成します
+// 専用ヘルパー
 var klassHelper = helper.of(Klass);
-
-// 次でも同じ機能をもつクラスヘルパーを作成できます
-// var klassHelper = helper(properties, template);
 
 // 初期化引数
 var config = {
   name: 'foo',
-  age: 30
+  age: 30,
+  enrtyDate: '2000-4-20'
 };
 
-// 引数の事前テスト
-var pass = klassHelper.test(config);
-if (!pass) {
-  throw new Error('設定エラー');
-}
+// テスト
+klassHelper.test(config);
 ```
 
-## クラスヘルパーのコマンド
+## 専用ヘルパーのメソッド
+
+専用ヘルパーメソッドは、コーディング時に使用します  
+主にコンソールへの表示を行います  
 
 ## klassHelper.template()
 
@@ -140,6 +125,7 @@ if (!pass) {
 ## klassHelper.property()
 
 設定できるプロパティの一覧を表示します
+klassHelper.properties()でも同様の動作をします
 
 ## klassHelper.property(propertyName)
 
@@ -147,7 +133,7 @@ if (!pass) {
 
 ## var otherKlassHelper = klassHelper.of(propertyName)
 
-指定したプロパティのクラスからヘルパーを取得します  
+指定したプロパティの専用ヘルパーを取得します  
 クラスにはヘルプ情報が設定されている必要があります
 
 ## var pass = klassHelper.test(config, action)
@@ -155,11 +141,11 @@ if (!pass) {
 初期化引数をテストします  
 違反している場合は違反内容を、成功した場合はその旨をコンソールに表示します  
 戻り値に、テストが成功したかどうかの真偽値を返します  
-actionに次の文字列を指定することで次のように挙動を変更します
-  
-  + show: コンソールにテスト結果を表示します (規定値)
-  + hide: コンソールにテスト結果を表示しません
-  + throw: テストに違反した場合は、例外を発生させます
+actionを指定すると違反時の動作を制御することができます
+
+ + show : コンソール表示   (規定値)
+ + hide : コンソール非表示、何も動作しない
+ + throw: 例外発行
 
 # ヘルプ情報をクラスに設定する
 
@@ -211,6 +197,11 @@ helper.property('name');
     + keyTypeは設定値がキーと値の組み合わせで設定する必要があることを示します
         + 値はそれぞれ指定したクラスである必要があります
     + これらの設定は排他で必ずひとつ設定する必要があります
+  + copy
+    + helper.copyを実行した際に、コピーを行うか行わないかを設定することができます
+    + falseを設定すると複製をしません
+    + 省略可能で、規定値はtrueです
+    + そのため、通常はコピーしないことをあらかじめ設定するためにfalseを指定します
   + description
     + 設定の目的を説明します
     + 文字列もしくは文字列の配列を指定します
@@ -221,12 +212,14 @@ helper.property('name');
     + 省略時はtrueです
     + キーが存在しても、値にnull/undefinedを指定した場合もrequiredに違反します
   + test
-    + 値をこまかくテストできる関数を指定します
-    + 引数は対象のひとつだけです
+    + 値をこまかく検証する関数を指定します
+    + 第一引数は設定値です
         + arrayTypeの場合は配列で渡されます
-    + 戻り値は設定されません
+        + keyTypeの場合はオブジェクトで渡されます
+    + 第二引数は初期値引数です
+    + 戻り値は不要です
     + 違反時は例外を発生させます
-    + 値が未設定(undefined/null)の場合は、このテストは行われません
+    + 省略可能です
 
 type,arrayType,keyTypeの違いを次のコードで確認してください
 
@@ -257,8 +250,8 @@ var config = {
   }
 };
 
-var inst = new Klass(config);
-console.log(inst);
+var instance = new Klass(config);
+console.log(instance);
 ```
 
 ### String固有の設定名
@@ -290,25 +283,27 @@ console.log(inst);
   + min,max
     + 最小値、最大値を指定します
 
-日時のみ、値の型が文字列でも動作します
-
+日時のみ、値の型が文字列で指定してもかまいません  
+これは、日時のみ特別に許されています  
+他の型では必ずtypeと値の型は一致する必要があります
 
 ## template
 
-templateコマンドで表示するテンプレートを設定します
+templateメソッドで表示するテンプレートを設定します
 
 ```
 var helper = require('cocotte-helper');
 
 function Klass () {}
-Klass.properties = {}; // 省略
+Klass.properties = {}; // 設定省略
 
 // テンプレート
 Klass.template = [
   'var config = {',
-  '  name: "foo",',
+  '  name: \'foo\',',
   '  age: 30',
-  '}'
+  '};',
+  'var instance = new Klass(config);'
 ];
 
 helper.of(Klass).template();
@@ -327,7 +322,6 @@ function Klass (config) {
 }
 Klass.properties = {
   obj: {
-    type: Object,
     properties: {
       name: {
         type: String,
@@ -351,14 +345,16 @@ var instance = new Klass(config);
 console.log(instance.obj.name);
 
 // 定義の取得
-klassHelper.property();
+klassHelper.properties();
 klassHelper.property('obj.name');
 ```
 
-サブプロパティのtypeは必ずObjectにします  
-さらに、propertiesを定義します  
-サブプロパティにさらにサブプロパティを定義することもできます  
+サブプロパティの定義はpropertiesに行います  
+サブプロパティの下にさらにサブプロパティを定義することもできます  
 これにより、深い階層をもつ設定を定義することができます  
+型は常にObjectで省略することができます 
+省略時は値タイプは単一値のtypeが選択されたことになります  
+明示的にtype・arrayType・keyTypeを選択することもでき、値は常にObjectです  
 サブプロパティの詳細情報は.で名称を連結することで取得できます  
 
 # 継承クラス
@@ -373,7 +369,7 @@ var helper = require('cocotte-helper');
 // クラス1
 function Klass1 (config) {
   helper.copy(config, this);     // copyは継承元から呼び出された場合は重複処理されません
-  this.created = new Date();
+  this.created = new Date();     // 明示的に継承元から呼び出しを行わなければ実行されません
 }
 Klass1.properties = {
   name: {
@@ -390,7 +386,7 @@ Klass1.prototype.info = function info() {
 // クラス2
 function Klass2 (config) {
   helper.copy(config, this);
-  // Klass1.call(this, config);  // 継承元のクラスのコンストラクタの呼び出す場合
+  // Klass1.call(this, config);  // 継承元のクラスのコンストラクタの呼び出し
 }
 //  - プロパティ情報はinheritsの前に定義
 Klass2.properties = {
@@ -412,7 +408,8 @@ var instance = new Klass2({age: 10, name: 'foo'});
 instance.info();
 ```
 
-最後の行で、インスタンスにnameプロパティも設定されていることが確認できます  
+継承元のクラスのコンストラクタを明示的に呼び出さなくとも、
+インスタンスにnameプロパティも設定されていることが確認できます  
 
 
 # テスト・初期化の連鎖
@@ -438,7 +435,7 @@ Klass1.properties = {
   },
   obj: {
     type: Klass2,   // 自作クラスをtypeに設定できる
-    required: false
+    required: true
   }
 };
 
@@ -464,13 +461,19 @@ var config = {
   }
 };
 
+var klass1Helper = helper.of(Klass1);
+
 // テストの連鎖
-helper.of(Klass1).test(config);
+klass1Helper.test(config);
 
 // 初期化の連鎖
 var instance = new Klass1(config);
 instance.info();
 instance.obj.info();
+
+// has-aのクラスのヘルパー
+var klass2Helper = klass1Helper.of('obj');
+klass2Helper.properties();
 ```
 
 Klass1の初期化引数のobjの設定は、Klass2の初期化引数になっています  

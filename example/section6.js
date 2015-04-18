@@ -11,7 +11,6 @@ function Klass (config) {
 }
 Klass.properties = {
   obj: {
-    type: Object,
     properties: {
       name: {
         type: String,
@@ -35,5 +34,5 @@ var instance = new Klass(config);
 console.log(instance.obj.name);
 
 // 定義の取得
-klassHelper.property();
+klassHelper.properties();
 klassHelper.property('obj.name');

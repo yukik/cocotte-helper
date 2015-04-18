@@ -46,10 +46,20 @@ var config = {
   }
 };
 
+var klass1Helper = helper.of(Klass1);
+
 // テストの連鎖
-helper.of(Klass1).test(config);
+klass1Helper.test(config);
 
 // 初期化の連鎖
 var instance = new Klass1(config);
 instance.info();
 instance.obj.info();
+
+// has-aのクラスのヘルパー
+var klass2Helper = klass1Helper.of('obj');
+klass2Helper.properties();
+
+
+
+

@@ -1,22 +1,17 @@
 /*
- * クラスヘルパー
+ * 専用ヘルパー
  */
 
 
 var helper = require('cocotte-helper');
 
-// テンプレート
-var template = [
-  'var config = {',
-  '  name: \'foo\',',
-  '  age: 30',
-  '};',
-  '',
-  'var instance = new Klass(config);'
-];
+// クラス
+function Klass(config) {
+  helper.copy(config, this);
+}
 
-// プロパティ
-var properties = {
+// プロパティ情報
+Klass.properties = {
   name: {
     type: String,
     description: '氏名',
@@ -28,30 +23,21 @@ var properties = {
     description: '年齢',
     min: 0,
     max: 120
+  },
+  entryDate: {
+    type: Date
   }
 };
 
-// クラス
-function Klass(config) {
-  helper.copy(config, this);
-}
-Klass.properties = properties;
-Klass.template = template;
-
-// クラスヘルパーを作成します
+// 専用ヘルパー
 var klassHelper = helper.of(Klass);
-
-// 次でも同じ機能をもつクラスヘルパーを作成できます
-// var klassHelper = helper(properties, template);
 
 // 初期化引数
 var config = {
   name: 'foo',
-  age: 30
+  age: 30,
+  enrtyDate: '2000-4-20'
 };
 
-// 引数の事前テスト
-var pass = klassHelper.test(config);
-if (!pass) {
-  throw new Error('設定エラー');
-}
+// テスト
+klassHelper.test(config);
