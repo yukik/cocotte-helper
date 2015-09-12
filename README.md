@@ -40,34 +40,35 @@ console.log(instance);
 
 ## ヘルパーのメソッド
 
-## helper.copy(config, instance, properties)
+### helper.copy({Object} config, {Object} instance, {Boolean} callSuper)
 
 テストと同時にプロパティのコピーします  
 テストに違反した場合は、例外を投げます  
 このメソッドの戻り値は、コピー元のオブジェクトです  
 初期化引数で省略されたものは、typeではnull、arrayTypeでは空配列が設定されます 
-
-propertiesを省略した場合はinstanceのクラスに定義されたプロパティ情報から自動的に設定します  
-通常はコンストラクタに`helper.copy(config, this);`と記述します  
 特定のプロパティのコピーを行わない場合はプロパティ情報のcopyにfalseを設定します
 
-## helper.inherits(Klass2, Klass1)
+callSuperにtrueを設定した場合は、継承元クラスのコンストラクタの呼び出しを行います  
+その際に、プロパティのコピー処理は一回だけ行うように効率化されます  
+
+### helper.inherits({Function} Klass2, {Function} Klass1)
 
 Klass2の継承元をKlass1に設定します  
 util.inheritsの機能に加え、プロパティ情報も継承させることができます  
 詳しくは継承クラスの項で説明します
 
-## var klassHelper = helper.of(Klass)
+### var klassHelper = helper.of({Function} Klass)
 
 専用ヘルパーを作成します  
 対象のクラスにプロパティ情報が設定されていなければなりません  
 専用ヘルパーは、プロパティ情報やテンプレート表示したりすることができます  
 
-## var klassHelper = helper(klassName, properties, template)
+### var klassHelper = helper({String} klassName, {Object} properties, {String} template)
 
 専用ヘルパーを作成します  
 プロパティ情報の設定されていないクラスでも、プロパティ情報・テンプレートを個別に
-指定することで、専用ヘルパーを作成することができます
+指定することで、専用ヘルパーを作成することができます  
+templateは省略可能です
 
 # 専用ヘルパー
 
@@ -117,26 +118,26 @@ klassHelper.test(config);
 専用ヘルパーメソッドは、コーディング時に使用します  
 主にコンソールへの表示を行います  
 
-## klassHelper.template()
+### klassHelper.template()
 
 初期化設定のオブジェクトの記述方法を示したテンプレートが表示されます  
 引数、戻り値ともに存在しません
 
-## klassHelper.property()
+### klassHelper.property()
 
 設定できるプロパティの一覧を表示します
 klassHelper.properties()でも同様の動作をします
 
-## klassHelper.property(propertyName)
+### klassHelper.property({String} propertyName)
 
 指定したプロパティの詳細を表示します
 
-## var otherKlassHelper = klassHelper.of(propertyName)
+### var otherKlassHelper = klassHelper.of({String} propertyName)
 
 指定したプロパティの専用ヘルパーを取得します  
 クラスにはヘルプ情報が設定されている必要があります
 
-## var pass = klassHelper.test(config, action)
+### var pass = klassHelper.test({Object} config, {String} action)
 
 初期化引数をテストします  
 違反している場合は違反内容を、成功した場合はその旨をコンソールに表示します  
@@ -209,7 +210,7 @@ helper.property('name');
     + 省略可能です
   + required
     + この設定は必ず行う必要があるかを真偽値で示します
-    + 省略時はtrueです
+    + 省略時はfalseです
     + キーが存在しても、値にnull/undefinedを指定した場合もrequiredに違反します
   + test
     + 値をこまかく検証する関数を指定します
@@ -368,8 +369,8 @@ var helper = require('cocotte-helper');
 
 // クラス1
 function Klass1 (config) {
-  helper.copy(config, this);     // copyは継承元から呼び出された場合は重複処理されません
-  this.created = new Date();     // 明示的に継承元から呼び出しを行わなければ実行されません
+  helper.copy(config, this); // 処理されません
+  this.created = new Date();
 }
 Klass1.properties = {
   name: {
@@ -379,14 +380,13 @@ Klass1.properties = {
 };
 Klass1.prototype.info = function info() {
   console.log('name:' + this.name);             // foo
-  console.log('created:' + this.created);       // undefined
+  console.log('created:' + this.created);       // Tue Apr 21 2015 09:30:22 GMT+0900 (JST) ※例
   console.log('type:' + this.constructor.name); // Klass2
 };
 
 // クラス2
 function Klass2 (config) {
-  helper.copy(config, this);
-  // Klass1.call(this, config);  // 継承元のクラスのコンストラクタの呼び出し
+  helper.copy(config, this, true);
 }
 //  - プロパティ情報はinheritsの前に定義
 Klass2.properties = {

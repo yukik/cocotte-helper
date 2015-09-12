@@ -1,6 +1,6 @@
 {
   "name": "cocotte-helper",
-  "description": "初期化引数ヘルパー",
+  "description": "properties checker",
   "homepage": "https://github.com/yukik/cocotte-helper",
   "keywords": [
     "cocotte",
@@ -15,7 +15,7 @@
     "url": "git://github.com/yukik/cocotte-helper.git"
   },
   "main": "lib/helper.js",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "scripts": {
     "test": "node ./test/test.js"
   },
