@@ -2,6 +2,9 @@
  * プロパティ情報の表示
  */
 
+/*global Cocotte*/
+var isClient = typeof window === 'object';
+var helper = isClient ? Cocotte.helper : require('..');
 
 function Klass () {}
 Klass.properties = {
@@ -26,6 +29,7 @@ Klass.properties = {
   }
 };
 
-var helper = require('cocotte-helper').of(Klass);
-helper.property();
-helper.property('name');
+var klassHelper = helper.of(Klass);
+
+klassHelper.property();
+klassHelper.property('name');

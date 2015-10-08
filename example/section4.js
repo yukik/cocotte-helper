@@ -2,8 +2,9 @@
  * type,arrayType,keyTypeの違い
  */
 
-
-var helper = require('cocotte-helper');
+/*global Cocotte*/
+var isClient = typeof window === 'object';
+var helper = isClient ? Cocotte.helper : require('..');
 
 function Klass (config) {
   helper.copy(config, this);

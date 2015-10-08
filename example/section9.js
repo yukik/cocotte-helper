@@ -2,8 +2,9 @@
  * 連鎖時、継承クラスに対応する
  */
 
-
-var helper = require('cocotte-helper');
+/*global Cocotte*/
+var isClient = typeof window === 'object';
+var helper = isClient ? Cocotte.helper : require('..');
 
 // クラス1
 function Klass1 (config) {

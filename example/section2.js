@@ -2,8 +2,9 @@
  * 専用ヘルパー
  */
 
-
-var helper = require('cocotte-helper');
+/*global Cocotte*/
+var isClient = typeof window === 'object';
+var helper = isClient ? Cocotte.helper : require('..');
 
 // クラス
 function Klass(config) {

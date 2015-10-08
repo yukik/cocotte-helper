@@ -2,8 +2,10 @@
  * テスト・初期化の連鎖
  */
 
+/*global Cocotte*/
+var isClient = typeof window === 'object';
+var helper = isClient ? Cocotte.helper : require('..');
 
-var helper = require('cocotte-helper');
 
 // クラス1
 function Klass1 (config) {

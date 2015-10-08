@@ -2,8 +2,10 @@
  * テンプレートの表示
  */
 
+/*global Cocotte*/
+var isClient = typeof window === 'object';
+var helper = isClient ? Cocotte.helper : require('..');
 
-var helper = require('cocotte-helper');
 
 function Klass () {}
 Klass.properties = {}; // 設定省略
